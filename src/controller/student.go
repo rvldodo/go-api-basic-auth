@@ -72,9 +72,43 @@ func CreateStudent(c echo.Context) error {
 }
 
 func UpdateStudent(c echo.Context) error {
-	return c.JSON(http.StatusOK, "Success update student")
+	id := c.Param("id")
+	student := new(model.Student)
+
+	db,err := config.ConnectDB()
+	if err != nil {
+		panic(err)
+	}
+
+	db.First(&student, id)
+	if student.ID == 0 {
+		return c.JSON(http.StatusNoContent, "No data with this id")
+	}
+
+	if err := c.Bind(&student); err != nil {
+		return err
+	}
+
+	db.Save(&student)
+
+	return c.JSON(http.StatusOK, student)
 }
 
 func DeleteStudent(c echo.Context) error {
+	student := new(model.Student)
+
+	id := c.Param("id")
+	db, err := config.ConnectDB()
+	if err != nil {
+		panic(err)
+	}
+
+	db.First(&student, id)
+	if student.ID == 0 {
+		return c.JSON(http.StatusNoContent, "No data with this id")
+	}
+
+	db.Delete(&student)
+
 	return c.JSON(http.StatusOK, "Success deleted student")
 }
